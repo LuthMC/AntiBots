@@ -1,0 +1,7 @@
+name: AntiBots
+version: 0.0.1
+main: Luthfi\AntiBots
+api: 5.0.0
+author: Luthfi
+description: A plugin to protect your server from bots.
+website: https://github.com/LuthMC/AntiBots
