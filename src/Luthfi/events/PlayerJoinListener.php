@@ -3,30 +3,29 @@
 namespace Luthfi\events;
 
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerPreLoginEvent;
-use pocketmine\Player;
+use pocketmine\event\server\ServerPreConnectEvent;  // Updated event
 use Luthfi\AntiBots;
 
 class PlayerJoinListener implements Listener {
 
     private $plugin;
-
     private $connectionAttempts = [];
 
     public function __construct(AntiBots $plugin) {
         $this->plugin = $plugin;
     }
 
-    public function onPlayerPreLogin(PlayerPreLoginEvent $event): void {
-        $player = $event->getPlayer();
-        $ip = $player->getAddress();
-        $username = $player->getName();
+    public function onServerPreConnect(ServerPreConnectEvent $event): void {
+        $session = $event->getSession();
+        $ip = $session->getIp();
+        $username = $session->getPlayerInfo()->getUsername();
 
         // Check for blacklisted IPs
         if ($this->plugin->getConfigValue("ip_blacklisting.enabled", true)) {
             $blacklist = $this->plugin->getConfigValue("ip_blacklisting.blacklist", []);
             if (in_array($ip, $blacklist)) {
-                $event->setCancelled(true);
+                $event->setReason("Blacklisted IP");
+                $event->cancel();
                 $this->plugin->getLogger()->warning("Blocked blacklisted IP: $ip");
                 return;
             }
@@ -35,7 +34,8 @@ class PlayerJoinListener implements Listener {
         // Check for invalid usernames
         if ($this->plugin->getConfigValue("filtering.invalid_usernames", true)) {
             if (!$this->isValidUsername($username)) {
-                $event->setCancelled(true);
+                $event->setReason("Invalid username");
+                $event->cancel();
                 $this->plugin->getLogger()->warning("Blocked invalid username: $username");
                 return;
             }
@@ -51,7 +51,7 @@ class PlayerJoinListener implements Listener {
         return preg_match("/^[a-zA-Z0-9_]{3,16}$/", $username);
     }
 
-    private function checkRateLimiting(string $ip, PlayerPreLoginEvent $event): void {
+    private function checkRateLimiting(string $ip, ServerPreConnectEvent $event): void {
         $timeLimit = $this->plugin->getConfigValue("rate_limiting.time_limit", 60);
         $maxConnections = $this->plugin->getConfigValue("rate_limiting.max_connections", 5);
 
@@ -62,7 +62,8 @@ class PlayerJoinListener implements Listener {
         );
 
         if (count($this->connectionAttempts[$ip]) >= $maxConnections) {
-            $event->setCancelled(true);
+            $event->setReason("Rate limiting triggered");
+            $event->cancel();
             $this->plugin->getLogger()->warning("Rate limiting triggered for IP: $ip");
             if ($this->plugin->getConfigValue("notifications.notify_on_bot_attack", true)) {
                 foreach ($this->plugin->getServer()->getOnlinePlayers() as $onlinePlayer) {
