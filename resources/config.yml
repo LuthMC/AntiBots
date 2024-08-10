@@ -1,0 +1,20 @@
+# AntiBots configuration
+
+filtering:
+  invalid_usernames: true  # Block usernames with special characters or too short/long
+  rapid_connections: true  # Block connections from the same IP that are too quick
+
+ip_blacklisting:
+  enabled: true
+  blacklist:
+    - 192.168.0.1
+    - 10.0.0.1
+
+rate_limiting:
+  enabled: true
+  max_connections: 5  # Max connections allowed per IP within the time limit
+  time_limit: 60  # Time limit in seconds
+
+notifications:
+  enabled: true
+  notify_on_bot_attack: true  # Notify admins when a bot attack is detected
