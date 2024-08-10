@@ -20,7 +20,7 @@ class PlayerJoinListener implements Listener {
         $packet = $event->getPacket();
 
         if ($packet instanceof LoginPacket) {
-            $username = $packet->getUsername(); // Correct method to get the username
+            $username = $packet->username; // Direct property access for username
             $ip = $event->getOrigin()->getIp(); // Correct method to get the IP address
 
             // Check for blacklisted IPs
