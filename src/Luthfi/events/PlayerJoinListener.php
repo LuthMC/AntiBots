@@ -20,8 +20,8 @@ class PlayerJoinListener implements Listener {
         $packet = $event->getPacket();
 
         if ($packet instanceof LoginPacket) {
-            $username = $packet->username;
-            $ip = $event->getOrigin()->getAddress();
+            $username = $packet->getUsername(); // Correct method to get the username
+            $ip = $event->getOrigin()->getIp(); // Correct method to get the IP address
 
             // Check for blacklisted IPs
             if ($this->plugin->getConfigValue("ip_blacklisting.enabled", true)) {
